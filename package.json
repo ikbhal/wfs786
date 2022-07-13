@@ -1,12 +1,24 @@
 {
-    "name": "wfs786",
-    "version": "0.1.0",
-    "private": true,
-    "dependencies": {
-       "express": "4.18.1"
-    },
-    "scripts": {
-      "start": "node server.js",
-    }
-  }
-  
+  "name": "wfs786",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000w\u0000f\u0000s\u00007\u00008\u00006\u0000\r\u0000 \u0000",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikbhal/wfs786.git"
+  },
+  "author": "Shaik Ikbhal Basha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ikbhal/wfs786/issues"
+  },
+  "homepage": "https://github.com/ikbhal/wfs786#readme"
+}
