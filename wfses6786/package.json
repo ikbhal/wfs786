@@ -7,8 +7,8 @@
     "transpile": "babel ./server --out-dir dist-server",
     "clean": "rimraf dist-server",
     "build": "npm-run-all clean transpile",
-    "dev": "cross-env NODE_ENV=development npm-run-all build server",
-    "prod": "cross-env NODE_ENV=production npm-run-all build server",
+    "dev": "crossNODE_ENV=development npm-run-all build server",
+    "prod": "$env:NODE_ENV=production npm-run-all build server",
     "start": "npm run prod",
     "watch:dev": "nodemon"
   },
