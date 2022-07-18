@@ -26,5 +26,15 @@ def load():
         }
     ]
     return jsonify(data);
-    
+
+
+@app.route('/save', methods=['POST'])
+def save():
+    content_type = request.headers.get('Content-Type', 'application/json')
+    if (content_type == 'application/json'):
+        json = request.json
+        return json 
+    else:
+        return 'Cont-Type not supported!'
+
 app.run(host='0.0.0.0', port=81)
