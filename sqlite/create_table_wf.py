@@ -12,7 +12,7 @@ with con:
     # cur.execute("CREATE TABLE nodes(id INT, name TEXT, childrenIds text)")
     # cur.execute("INSERT INTO nodes VALUES(1,'n1', '2,3')")
     # cur.execute("INSERT INTO nodes VALUES(2,'n2','')")
-    # cur.execute("INSERT INTO nodes VALUES(3,'n3','')")
+    cur.execute("INSERT INTO nodes VALUES(5,'n5','')")
 
 
     

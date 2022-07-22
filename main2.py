@@ -9,20 +9,32 @@ def connect_to_db():
 
 def insert_node(node):
     inserted_node = {}
+    print("ikb  ...node")
+    print(node)
+
+    # return node
+    conn = sqlite3.connect('wf.db')
     try:
-        conn = connect_to_db()
+        # conn = connect_to_db()
+       
         cur = conn.cursor()
         cur.execute("INSERT INTO nodes (id, text, childrenIds) VALUES (?, ?, ?)",
+        # cur.execute("INSERT INTO nodes (id, text, childrenIds) VALUES (10, 'n1', '')")
                     (node['id'],   
                     node['text'],   
                     node['childrenIds']) )
+
+        # cur.execute("INSERT INTO nodes VALUES(7,'n7','')")
         conn.commit()
-        inserted_node = get_node_by_id(node['id'])
-    except:
-        conn().rollback()
+        # inserted_node = get_node_by_id(node['id'])
+    except Exception as e:
+        conn.rollback()
+        print("exception error: {0}".format(e))
 
     finally:
         conn.close()
+
+    return node
 
 def get_node_by_id(node_id):
     node = {}
@@ -54,15 +66,19 @@ def load():
 
 @app.route('/save', methods=['POST'])
 def save():
-    nodeReq = request.json
-    nodeDb= insert_node(nodeReq)
-    return jsonify(nodeDb);
+    print("ikb reach save api")
+    # nodeDb= insert_node(nodeReq)
+    return jsonify(" will work soon")
 
 @app.route('/nodes', methods=['POST'])
 def createNode():
     print("create node")
-    node = request.json
-    return jsonify(node);
+    # node = request.json
+    nodeReq = request.json
+    print("nodeReq:", nodeReq)
+    nodeDb= insert_node(nodeReq)
+    # return jsonify(nodeDb)
+    return jsonify(nodeReq)
 
 app.run(host='0.0.0.0', port=81, debug=True)
 
