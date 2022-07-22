@@ -1,13 +1,15 @@
 from flask import Flask,jsonify, request
+from flask_cors import CORS, cross_origin
 import sqlite3
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 
 def connect_to_db():
     conn = sqlite3.connect('wf.db')
     return conn
 
-def get_users_from_db():
+def get_nodes_from_db():
     print("inside ikb: get_users ")
     nodes = []
     try:
@@ -80,13 +82,44 @@ def get_node_by_id(node_id):
     return node
 
 
+
+def update_node_in_db(node):
+    print("inside update node helper db method", node)
+    updated_node = {}
+    try:
+        conn = connect_to_db()
+        cur = conn.cursor()
+        cur.execute("UPDATE nodes SET text = ?, childrenIds = ? WHERE id =?",  
+                     (node["text"], node["childrenIds"], node["id"],))
+        conn.commit()
+        #return the user
+        updated_node = get_node_by_id(node["id"])
+
+    except Exception as e:
+        # print("error during update ", e)
+        print("exception error: {0}".format(e))
+        conn.rollback()
+        updated_node = {}
+    finally:
+        cur.close() 
+        conn.close()
+
+    return updated_node
+
 @app.route('/')
 def index():
     return 'web app with Python Flask'
 
 @app.route('/load')
 def load():
-    return jsonify('load');
+    nodes = get_nodes_from_db()
+    res = {
+        "nodes": nodes,
+        "startNodeId": 1, 
+        "nodeIdLast": len(nodes)
+    }
+   
+    return jsonify(res)
 
 @app.route('/save', methods=['POST'])
 def save():
@@ -97,7 +130,7 @@ def save():
 @app.route('/nodes')
 def get_nodes():
 
-    rows = get_users_from_db()
+    rows = get_nodes_from_db()
     return jsonify(rows)
     # return jsonify([{"id":1, "text":"text", "childrenIds":[]}])
 
@@ -110,6 +143,15 @@ def createNode():
     nodeDb= insert_node(nodeReq)
     # return jsonify(nodeDb)
     return jsonify(nodeReq)
+
+@app.route('/nodes', methods=['PUT'])
+def update_node():
+    print("ikb inside update_node ")
+    node = request.json
+    node_db= update_node_in_db(node)
+    print("update node from db is ", node_db)
+    # return jsonify(node_db)
+    return jsonify(node_db)
 
 app.run(host='0.0.0.0', port=81, debug=True)
 
