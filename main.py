@@ -106,6 +106,46 @@ def update_node_in_db(node):
 
     return updated_node
 
+def delete_node_by_id(node_id, parent_id=None, delete_type="delete"):
+
+    response = {
+        "deletedNode": false, 
+        "updated_parent_node": {}
+    }
+    try:
+        conn = connect_to_db()
+        cur = conn.cursor()
+        cur.execute("delete nodes  WHERE id =?",  (node_id,))
+        conn.commit()
+
+        response['deletedNode'] = True
+
+        # remove from parent childrenIds  
+        # retrieve parnet node by id 
+        parent_node = get_node_by_id(parent_id)
+        children_ids = parent_node['childrenIds']
+        children_ids_arr = children_ids.split(",")
+        # remvoe node id from chilren ids arr
+        if node_id in children_ids_arr:
+            children_ids_arr.remove(node_id)
+        children_ids_str = ""
+        for cid in children_ids_arr:
+            children_ids_str += cid
+
+        parent_node["childrenIds"] = children_ids_str
+        update_node_in_db(parent_node)
+
+        # TODO improve fetch again from db , set here
+        response['updated_parent_node'] = parent_node
+
+    except Exception as e:
+        # print("error during update ", e)
+        print("exception error: {0}".format(e))
+        conn.rollback()
+    finally:
+        cur.close() 
+        conn.close()
+
 def get_new_node_id():
     print("inside get_new_node_id")
     last_node_id = -1
@@ -177,6 +217,29 @@ def update_node():
     return jsonify(node_db)
 
 
+'''
+ {
+    "nodeId": "3",
+    "parentId": "1", # if not sent we need to delete from all the parent nodes childrenIds array
+    "deleteType": "unlink" or "delete" , delete is default if not sent
+ }
+'''
+# for now we are deleting node, delete from given parent alone
+# TODO later we need to remove from it was used.
+@app.route('/nodes', methods=['DELETE'])
+def delete_node():
+    print("Ikb delete node request")
+    req = request.json
+    print("delete request payload ", req)
+
+    node_id = req['nodeId']
+    parent_id = req['parentId']
+    print("node_id {0} parent_id {1}".format(node_id, parent_id))
+
+    delete_node_by_id(node_id, parent_id)
+
+    return jsonify("delete node ")
+    
 
 # add child new node given child text and parent node id
 '''
