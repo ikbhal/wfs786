@@ -106,6 +106,29 @@ def update_node_in_db(node):
 
     return updated_node
 
+def get_new_node_id():
+    print("inside get_new_node_id")
+    last_node_id = -1
+    try:
+        conn = connect_to_db()
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute("SELECT max(id) as last_id FROM nodes")
+        row = cur.fetchone()
+
+        # convert row object to dictionary
+        last_node_id = row["last_id"]
+
+    except Exception as e:
+        print("error retrieve max node id {0}".format(e))
+        last_node_id = {}
+    finally:
+        cur.close()
+        conn.close()
+
+    return last_node_id
+    
+
 @app.route('/')
 def index():
     return 'web app with Python Flask'
@@ -153,6 +176,63 @@ def update_node():
     # return jsonify(node_db)
     return jsonify(node_db)
 
-app.run(host='0.0.0.0', port=81, debug=True)
 
-#app.run(debug=True)
+
+# add child new node given child text and parent node id
+'''
+{
+    childText: "<child text>",
+    parentNodeId : "<parent node id>",
+    childIndex: <parent child position index start with 0>
+}
+'''
+@app.route('/nodes/child', methods=['POST'])
+def add_child():
+    req = request.json 
+    print("req:", req)
+    # create child node
+
+    last_node_id = get_new_node_id() +1;
+    print("last_node_id ", last_node_id);
+    child = {'id': last_node_id,'text': req['childText'], 'childrenIds':''}
+    print("child ", child)
+    
+    insert_node(child)
+    
+    # get child id
+    child_db = get_node_by_id(last_node_id) 
+    
+    print("retrieve child node from db", child_db)
+    child_id = child_db['id']
+    # retrieve parent node by id 
+    parent_id = req['parentNodeId']
+    parent_node = get_node_by_id(parent_id)
+    # update parent node childreNids
+    parent_node_childrenIds = parent_node['childrenIds'].split(',')
+    parent_node_childrenIds.append(child_id)
+    children_ids_str = ""
+    for cid in parent_node_childrenIds:
+        children_ids_str  += "," + str(cid)
+    print("children_ids_str is ", children_ids_str)
+    # parent_node['childrenIds'] = ",".join(parent_node_childrenIds)
+    parent_node['childrenIds'] = children_ids_str
+
+    print('saving updated parent node', parent_node)
+    # save parent node
+    update_node_in_db(parent_node)
+    # retrieve parent node by id 
+    parrent_node_db2 = get_node_by_id(parent_id)
+    res = {
+        
+        'parent': parrent_node_db2,
+        'chyild': child_db
+    }
+
+    print("return respone forchild ", res)
+    return jsonify(res)
+    
+    # return jsonify("return response")
+
+app.run(host='localhost', port=81, debug=True)
+
+# app.run(debug=True)
