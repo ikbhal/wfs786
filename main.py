@@ -82,6 +82,31 @@ def get_node_by_id(node_id):
     return node
 
 
+# update_node_text_in_db
+
+def update_node_text_in_db(node):
+    print("inside update_node_text_in_db ", node)
+    updated_node = {}
+    try:
+        conn = connect_to_db()
+        cur = conn.cursor()
+        cur.execute("UPDATE nodes SET text = ? WHERE id =?",  
+                     (node["text"], node["id"],))
+        conn.commit()
+        #return the user
+        updated_node = get_node_by_id(node["id"])
+
+    except Exception as e:
+        # print("error during update ", e)
+        print("exception error: {0}".format(e))
+        conn.rollback()
+        updated_node = {}
+    finally:
+        cur.close() 
+        conn.close()
+
+    return updated_node
+
 
 def update_node_in_db(node):
     print("inside update node helper db method", node)
@@ -216,10 +241,23 @@ def createNode():
     # return jsonify(nodeDb)
     return jsonify(nodeReq)
 
+
+
+@app.route('/nodes/text', methods=['PUT'])
+def update_node_text():
+    print("ikb inside update_node ")
+    node = request.json
+    print("update node node is ", node)
+    node_db= update_node_text_in_db(node)
+    print("update node from db is ", node_db)
+    # return jsonify(node_db)
+    return jsonify(node_db)
+
 @app.route('/nodes', methods=['PUT'])
 def update_node():
     print("ikb inside update_node ")
     node = request.json
+    print("update node node is ", node)
     node_db= update_node_in_db(node)
     print("update node from db is ", node_db)
     # return jsonify(node_db)
