@@ -107,22 +107,26 @@ def update_node_in_db(node):
     return updated_node
 
 def delete_node_by_id(node_id, parent_id=None, delete_type="delete"):
-
+    print("inside delete node by id ", node_id, ", parent_id=", parent_id, ", delete_type=", delete_type)
     response = {
-        "deletedNode": false, 
+        "deletedNode": False, 
         "updated_parent_node": {}
     }
     try:
         conn = connect_to_db()
         cur = conn.cursor()
-        cur.execute("delete nodes  WHERE id =?",  (node_id,))
+        print("deleting node id ", node_id)
+        cur.execute("delete from nodes  WHERE id =?",  (node_id,))
         conn.commit()
+
+        print("delet success node id ", node_id)
 
         response['deletedNode'] = True
 
         # remove from parent childrenIds  
         # retrieve parnet node by id 
         parent_node = get_node_by_id(parent_id)
+        print("get parent_node ", parent_node)
         children_ids = parent_node['childrenIds']
         children_ids_arr = children_ids.split(",")
         # remvoe node id from chilren ids arr
@@ -130,21 +134,26 @@ def delete_node_by_id(node_id, parent_id=None, delete_type="delete"):
             children_ids_arr.remove(node_id)
         children_ids_str = ""
         for cid in children_ids_arr:
-            children_ids_str += cid
+            children_ids_str = children_ids_str + "," + str(cid)
 
+        print("final parnet children_ids_str ",children_ids_str)
         parent_node["childrenIds"] = children_ids_str
-        update_node_in_db(parent_node)
+
+        print("updating parent node in db")
+        parent_node_from_db = update_node_in_db(parent_node)
 
         # TODO improve fetch again from db , set here
-        response['updated_parent_node'] = parent_node
+        response['updated_parent_node'] = parent_node_from_db
 
     except Exception as e:
         # print("error during update ", e)
-        print("exception error: {0}".format(e))
+        print("exception error: {0}".format(e))     
         conn.rollback()
     finally:
         cur.close() 
         conn.close()
+
+    return response
 
 def get_new_node_id():
     print("inside get_new_node_id")
@@ -236,9 +245,9 @@ def delete_node():
     parent_id = req['parentId']
     print("node_id {0} parent_id {1}".format(node_id, parent_id))
 
-    delete_node_by_id(node_id, parent_id)
+    resp = delete_node_by_id(node_id, parent_id)
 
-    return jsonify("delete node ")
+    return jsonify(resp)
     
 
 # add child new node given child text and parent node id
@@ -275,7 +284,10 @@ def add_child():
     parent_node_childrenIds.append(child_id)
     children_ids_str = ""
     for cid in parent_node_childrenIds:
-        children_ids_str  += "," + str(cid)
+        if(children_ids_str  == ""):
+            children_ids_str = str(cid)
+        else:
+            children_ids_str  += "," + str(cid)
     print("children_ids_str is ", children_ids_str)
     # parent_node['childrenIds'] = ",".join(parent_node_childrenIds)
     parent_node['childrenIds'] = children_ids_str
@@ -288,7 +300,7 @@ def add_child():
     res = {
         
         'parent': parrent_node_db2,
-        'chyild': child_db
+        'child': child_db
     }
 
     print("return respone forchild ", res)
