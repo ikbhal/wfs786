@@ -274,7 +274,15 @@ def update_node():
 # for now we are deleting node, delete from given parent alone
 # TODO later we need to remove from it was used.
 @app.route('/nodes', methods=['DELETE'])
-def delete_node():
+def delete_node_with_delete_method():
+    return delete_node_api_helper(request)
+
+@app.route('/nodes/delete', methods=['POST'])
+def delete_node_with_post_method():
+    return delete_node_api_helper(request)
+
+
+def delete_node_api_helper(request):
     print("Ikb delete node request")
     req = request.json
     print("delete request payload ", req)
