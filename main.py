@@ -1,4 +1,6 @@
-from flask import Flask,jsonify, request,status
+from flask import Flask,jsonify, request
+# from flask_api import status
+from werkzeug.exceptions import abort
 from flask_cors import CORS, cross_origin
 import sqlite3
 
@@ -317,7 +319,7 @@ def add_child():
         # send 422 status code, meessage 
     if( 'parentNodeId' not in req or  req['parentNodeId'] ==''):
         content = {'message': {'parentNodeId': 'parent node id is empty'}}
-        return content, status.HTTP_400_BAD_REQUEST
+        abort(400, f"parent node is empty or not sent")
     # create child node
 
     last_node_id = get_new_node_id() +1;
