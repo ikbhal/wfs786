@@ -159,7 +159,10 @@ def delete_node_by_id(node_id, parent_id=None, delete_type="delete"):
             children_ids_arr.remove(node_id)
         children_ids_str = ""
         for cid in children_ids_arr:
-            children_ids_str = children_ids_str + "," + str(cid)
+            if children_ids_str == "":
+                children_ids_str =  str(cid)
+            else:
+                children_ids_str += "," + str(cid)
 
         print("final parnet children_ids_str ",children_ids_str)
         parent_node["childrenIds"] = children_ids_str
