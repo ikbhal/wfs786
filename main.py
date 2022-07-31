@@ -1,4 +1,4 @@
-from flask import Flask,jsonify, request
+from flask import Flask,jsonify, request,status
 from flask_cors import CORS, cross_origin
 import sqlite3
 
@@ -24,7 +24,8 @@ def get_nodes_from_db():
             node = {}
             node["id"] = i["id"]
             node["text"] = i["text"]
-            node["childrenIds"] = i["childrenIds"]
+            # node["childrenIds"] = i["childrenIds"]
+            node["children"] = i["childrenIds"].split(",")
             
             nodes.append(node)
 
@@ -311,6 +312,12 @@ def delete_node_api_helper(request):
 def add_child():
     req = request.json 
     print("req:", req)
+
+    # validate parentNodeId should exist, childText optional
+        # send 422 status code, meessage 
+    if( 'parentNodeId' not in req or  req['parentNodeId'] ==''):
+        content = {'message': {'parentNodeId': 'parent node id is empty'}}
+        return content, status.HTTP_400_BAD_REQUEST
     # create child node
 
     last_node_id = get_new_node_id() +1;
