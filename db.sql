@@ -3,3 +3,11 @@ create table node(
   title text default '',
   childrenIds 
 )
+
+// auto_incrment is not working with sqlit3
+create table users(
+  id int primary key,
+  email varchar(255) ,
+  password varchar(255),
+  mobile_number varchar(15)
+);

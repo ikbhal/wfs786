@@ -1,8 +1,12 @@
+# from crypt import methods
+from crypt import methods
+import json
 from flask import Flask,jsonify, request
 # from flask_api import status
 from werkzeug.exceptions import abort
 from flask_cors import CORS, cross_origin
 import sqlite3
+from .users import get_user_by_email_and_password, insert_user, get_user_by_id
 
 app = Flask(__name__)
 CORS(app, support_credentials=True)
@@ -365,6 +369,37 @@ def add_child():
     return jsonify(res)
     
     # return jsonify("return response")
+
+
+# user regsiter then user login
+# status: testing needed
+@app.route("register_user", methods=["POST"])
+def register_user():
+    print("request json :", request.json)
+    user = request.json
+    user_id = user['id'] if 'id' in user  else ""
+    print("user_id :", user_id)
+    insert_user(user)
+    user_from_db = get_user_by_id(user_id)
+    return jsonify(user_from_db)
+
+@app.route('login_user', methods=['GET'])
+def login_user():
+    print("request json :", request.json)
+    req = request.json
+    email = req.email
+    password = req.password
+    user_from_db = get_user_by_email_and_password(email, password)
+    if user_from_db:
+        user_id = user_from_db['id']
+        email = user_from_db['email']
+        return jsonify({'login': True, 
+                'user_id': user_id, 
+                'email': email})
+    else:
+        return jsonify({'login': False, 
+                'message': 'invalid email or password'})
+
 
 app.run(host='localhost', port=81, debug=True)
 
